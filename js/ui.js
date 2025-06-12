@@ -418,12 +418,16 @@ class UIManager {
         const button = document.querySelector(`.section-toggle[data-section="${sectionId}"]`);
         const icon = button.querySelector('i');
         
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.style.transform = 'rotate(0deg)';
-        } else {
-            content.style.display = 'none';
-            icon.style.transform = 'rotate(-90deg)';
+        if (content && button && icon) {
+            const isHidden = content.style.display === 'none' || window.getComputedStyle(content).display === 'none';
+            
+            if (isHidden) {
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(-90deg)';
+            }
         }
     }
 

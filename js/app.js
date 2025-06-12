@@ -5,18 +5,23 @@ class ShopifyQAApp {
         // Wait for data to be available
         if (!window.checklistData || !window.categoryColors) {
             console.error('Checklist data not loaded');
-            return;
+            throw new Error('Required data not available');
         }
         console.log('Creating app with data:', window.checklistData.length, 'sections');
         this.originalData = [...window.checklistData];
-        this.initializeManagers();
+        try {
+            this.initializeManagers();
+        } catch (error) {
+            console.error('Error initializing managers:', error);
+            throw error;
+        }
     }
 
     initializeManagers() {
         // Initialize core managers
         this.progressManager = new ProgressManager(this.originalData);
         this.themeManager = new ThemeManager();
-        this.filterManager = new FilterManager(this.originalData);
+        this.filterManager = new FilterManager(this.originalData, this.progressManager);
         this.exportManager = new ExportManager(this.originalData, this.progressManager);
         this.uiManager = new UIManager(this.originalData, this.progressManager, this.filterManager);
         this.animationManager = new AnimationManager();
@@ -50,18 +55,32 @@ class ShopifyQAApp {
 }
 
 // Initialize the application when everything is loaded
-window.addEventListener('load', () => {
-    console.log('Window loaded, checking for data...');
+let appInitialized = false;
+
+function initializeApp() {
+    if (appInitialized) return;
+    
+    console.log('Starting app initialization...');
     
     // Ensure data is loaded before initializing
     const initApp = () => {
         console.log('Checking data:', !!window.checklistData, !!window.categoryColors);
         
-        if (window.checklistData && window.categoryColors) {
+        if (window.checklistData && window.categoryColors && !appInitialized) {
             console.log('Data loaded, initializing app...');
-            window.shopifyQAApp = new ShopifyQAApp();
-            window.shopifyQAApp.init();
-        } else {
+            try {
+                window.shopifyQAApp = new ShopifyQAApp();
+                if (window.shopifyQAApp) {
+                    window.shopifyQAApp.init();
+                    appInitialized = true;
+                    console.log('App initialized successfully');
+                } else {
+                    console.error('Failed to create app instance');
+                }
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
+        } else if (!appInitialized) {
             console.log('Waiting for data to load...');
             // Wait a bit more for data to load
             setTimeout(initApp, 50);
@@ -70,4 +89,8 @@ window.addEventListener('load', () => {
     
     // Start trying to initialize immediately
     initApp();
-});
+}
+
+// Try to initialize on both DOMContentLoaded and load events
+document.addEventListener('DOMContentLoaded', initializeApp);
+window.addEventListener('load', initializeApp);

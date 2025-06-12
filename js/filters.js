@@ -1,7 +1,8 @@
 // Filtering and Search Module
 class FilterManager {
-    constructor(originalData) {
+    constructor(originalData, progressManager = null) {
         this.originalData = originalData;
+        this.progressManager = progressManager;
         this.currentFilter = {
             search: '',
             priority: '',
@@ -60,11 +61,14 @@ class FilterManager {
         }
 
         // Apply status filter
-        if (this.currentFilter.status) {
+        if (this.currentFilter.status && this.progressManager) {
             const isCompleted = this.currentFilter.status === 'completed';
             filteredData = filteredData.map(section => ({
                 ...section,
-                items: section.items.filter(item => item.completed === isCompleted)
+                items: section.items.filter(item => {
+                    const itemCompleted = this.progressManager.completedItems.has(item.id);
+                    return itemCompleted === isCompleted;
+                })
             })).filter(section => section.items.length > 0);
         }
 
@@ -98,7 +102,7 @@ class FilterManager {
         if (!this.currentFilter.search) return text;
         
         const searchTerm = this.currentFilter.search;
-        const sanitized = searchTerm.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+        const sanitized = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`(${sanitized})`, 'gi');
         return text.replace(regex, '<span class="search-highlight">$1</span>');
     }

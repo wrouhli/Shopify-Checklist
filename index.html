@@ -184,14 +184,22 @@
     </div>
 
     <!-- Scripts -->
-    <script src="data/checklist-data.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/progress.js"></script>
-    <script src="js/filters.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/animations.js"></script>
-    <script src="js/app.js"></script>
+    <script src="data/checklist-data.js?v=1"></script>
+    <script src="js/utils.js?v=1"></script>
+    <script src="js/theme.js?v=1"></script>
+    <script src="js/progress.js?v=1"></script>
+    <script src="js/filters.js?v=1"></script>
+    <script>
+        // Verify FilterManager loaded
+        if (typeof FilterManager === 'undefined') {
+            console.error('FilterManager failed to load!');
+        } else {
+            console.log('✓ FilterManager loaded successfully');
+        }
+    </script>
+    <script src="js/export.js?v=1"></script>
+    <script src="js/ui.js?v=1"></script>
+    <script src="js/animations.js?v=1"></script>
+    <script src="js/app.js?v=1"></script>
 </body>
 </html>

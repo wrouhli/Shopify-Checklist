@@ -1,8 +1,4 @@
 // Export Functionality Module
-
-function escapeHTML(str) {
-    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
 class ExportManager {
     constructor(originalData, progressManager) {
         this.originalData = originalData;

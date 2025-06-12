@@ -1,4 +1,8 @@
 // Export Functionality Module
+
+function escapeHTML(str) {
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 class ExportManager {
     constructor(originalData, progressManager) {
         this.originalData = originalData;
@@ -219,7 +223,7 @@ class ExportManager {
                         doc.setFontSize(8);
                         doc.setFont(undefined, 'italic');
                         doc.setTextColor(75, 85, 99);
-                        const notesLines = doc.splitTextToSize(`Notes: ${item.notes}`, pageWidth - 80);
+                        const notesLines = doc.splitTextToSize(`Notes: ${escapeHTML(item.notes)}`, pageWidth - 80);
                         doc.text(notesLines, 35, yPos);
                         yPos += Math.max(notesLines.length * 3, 6);
                     }
@@ -296,7 +300,7 @@ class ExportManager {
                     <span class="priority ${item.priority}">${item.priority.toUpperCase()}</span>
                     <br>
                     <small>${item.hint}</small>
-                    ${item.notes ? `<br><em>Notes: ${item.notes}</em>` : ''}
+                    ${item.notes ? `<br><em>Notes: ${escapeHTML(item.notes)}</em>` : ''}
                 </div>
             `).join('')}
         </div>

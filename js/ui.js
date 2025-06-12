@@ -542,7 +542,7 @@ class UIManager {
         modal.innerHTML = `
             <div class="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-xl font-bold text-slate-800 pr-4">${item.title}</h3>
+                    <h3 class="text-xl font-bold text-slate-800 pr-4">${escapeHTML(item.title)}</h3>
                     <button id="close-details" class="text-slate-400 hover:text-slate-600">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
@@ -551,7 +551,7 @@ class UIManager {
                 <div class="space-y-4">
                     <div>
                         <h4 class="font-medium text-slate-700 mb-2">Hint</h4>
-                        <p class="text-slate-600">${item.hint}</p>
+                        <p class="text-slate-600">${escapeHTML(item.hint)}</p>
                     </div>
                     
                     ${item.links && item.links.length > 0 ? `

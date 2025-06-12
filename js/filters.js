@@ -98,7 +98,8 @@ class FilterManager {
         if (!this.currentFilter.search) return text;
         
         const searchTerm = this.currentFilter.search;
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const sanitized = searchTerm.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+        const regex = new RegExp(`(${sanitized})`, 'gi');
         return text.replace(regex, '<span class="search-highlight">$1</span>');
     }
 

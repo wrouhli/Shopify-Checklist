@@ -1,4 +1,4 @@
-const checklistData = [
+window.checklistData = [
   {
     id: 'technical-performance',
     title: 'Technical Performance & Infrastructure',
@@ -2061,7 +2061,7 @@ const priorityColors = {
 };
 
 // Category colors
-const categoryColors = {
+window.categoryColors = {
   blue: {
     bg: 'bg-blue-50',
     border: 'border-blue-200',

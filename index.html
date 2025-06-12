@@ -24,141 +24,11 @@
     <!-- jsPDF for export functionality -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        
-        /* Custom animations */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes celebration {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .celebration {
-            animation: celebration 0.6s ease-in-out;
-        }
-        
-        /* Progress ring animation */
-        .progress-ring-circle {
-            transition: stroke-dasharray 0.5s ease-in-out;
-        }
-        
-        /* Dark mode styles */
-        .dark {
-            color-scheme: dark;
-        }
-        
-        .dark .custom-checkbox {
-            border-color: #475569;
-            background-color: #1e293b;
-        }
-        
-        .dark .custom-checkbox:checked {
-            background-color: #22c55e;
-            border-color: #22c55e;
-        }
-        
-        .dark .tooltip .tooltip-content {
-            background: #0f172a;
-            color: #f1f5f9;
-        }
-        
-        /* Custom checkbox styles */
-        .custom-checkbox {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .custom-checkbox:checked {
-            background-color: #22c55e;
-            border-color: #22c55e;
-        }
-        
-        .custom-checkbox:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .custom-checkbox:hover {
-            border-color: #0ea5e9;
-        }
-        
-        /* Tooltip styles */
-        .tooltip {
-            position: relative;
-        }
-        
-        .tooltip .tooltip-content {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            white-space: nowrap;
-            z-index: 1000;
-            transition: opacity 0.3s;
-        }
-        
-        .tooltip:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }
-        
-        /* Search highlight */
-        .search-highlight {
-            background-color: #fef08a;
-            color: #1f2937;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-        
-        .dark .search-highlight {
-            background-color: #fbbf24;
-            color: #1f2937;
-        }
-    </style>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/dark-mode.css">
+    <link rel="stylesheet" href="styles/components.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors">
     <!-- Header -->
@@ -313,7 +183,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="checklist-data.js"></script>
-    <script src="app.js"></script>
+    <script src="data/checklist-data.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

@@ -2,8 +2,6 @@
 
 A comprehensive, interactive Quality Assurance checklist web app for Shopify stores, built by [Konnectoos Agency](https://konnectoos.com). Ensure your Shopify store is launch-ready with best practices, implementation links, and progress tracking.
 
-![Shopify QA Checklist Logo](assets/icons/logo-konnectoos.png)
-
 ---
 
 ## 🚀 Features

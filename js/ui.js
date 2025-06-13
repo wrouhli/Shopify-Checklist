@@ -5,10 +5,20 @@ class UIManager {
         this.progressManager = progressManager;
         this.filterManager = filterManager;
         this.data = [...originalData];
+        this.shortcutsEnabled = localStorage.getItem('keyboardShortcuts') !== 'false';
+        this.currentItemIndex = -1;
+        this.items = [];
     }
 
     init() {
         this.bindEvents();
+        this.bindKeyboardEvents();
+        
+        // Defer shortcuts button update to allow DOM to be ready
+        setTimeout(() => {
+            this.updateShortcutsButton();
+        }, 100);
+        
         this.render();
     }
 
@@ -50,10 +60,15 @@ class UIManager {
             this.exportFinalReport();
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            this.handleKeyboard(e);
-        });
+        // Shortcuts toggle - defer to ensure DOM is ready
+        setTimeout(() => {
+            const shortcutsToggle = document.getElementById('shortcuts-toggle');
+            if (shortcutsToggle) {
+                shortcutsToggle.addEventListener('click', () => {
+                    this.toggleShortcuts();
+                });
+            }
+        }, 100);
 
         // Auto-save on changes
         window.addEventListener('beforeunload', () => {
@@ -512,27 +527,406 @@ class UIManager {
         }
     }
 
-    handleKeyboard(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            this.progressManager.saveProgress();
-            this.showNotification('Progress saved', 'success');
+    bindKeyboardEvents() {
+        document.addEventListener('keydown', (e) => {
+            // Handle shortcuts toggle (always works)
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                this.toggleShortcuts();
+                return;
+            }
+            
+            // Handle Escape key even when typing in inputs
+            if (e.key === 'Escape' && this.shortcutsEnabled) {
+                this.handleEscape();
+                return;
+            }
+            
+            if (this.shortcutsEnabled && this.shouldHandleShortcut(e)) {
+                this.handleKeyboardShortcut(e);
+            }
+        });
+
+        // Update items list when rendered
+        document.addEventListener('dataFiltered', () => {
+            this.updateItemsList();
+        });
+
+        // Add specific Escape handler for search input - defer to ensure DOM is ready
+        setTimeout(() => {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        if (searchInput.value) {
+                            searchInput.value = '';
+                            this.filterManager.clearFilters();
+                        }
+                        searchInput.blur();
+                    }
+                });
+            }
+        }, 100);
+    }
+
+    shouldHandleShortcut(e) {
+        const activeElement = document.activeElement;
+        const tagName = activeElement.tagName.toLowerCase();
+        
+        // Don't trigger when user is typing
+        if (tagName === 'input' || 
+            tagName === 'textarea' || 
+            activeElement.contentEditable === 'true' ||
+            activeElement.isContentEditable) {
+            return false;
         }
         
-        if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-            e.preventDefault();
-            document.getElementById('export-btn').click();
+        // Don't trigger with modifier keys (except our toggle)
+        if (e.ctrlKey || e.metaKey || e.altKey) {
+            return false;
         }
         
-        if (e.key === 'Escape') {
-            const celebration = document.getElementById('completion-celebration');
-            if (!celebration.classList.contains('hidden')) {
-                this.closeCelebration();
+        return true;
+    }
+
+    handleKeyboardShortcut(e) {
+        const key = e.key.toLowerCase();
+        
+        switch(key) {
+            case '?': 
+                e.preventDefault();
+                this.showKeyboardHelp(); 
+                break;
+            case 'escape':
+                this.handleEscape();
+                break;
+            case '/':
+                e.preventDefault();
+                this.focusSearch();
+                break;
+            case 'j':
+                e.preventDefault();
+                this.navigateNext();
+                break;
+            case 'k':
+                e.preventDefault();
+                this.navigatePrevious();
+                break;
+            case ' ':
+                if (this.currentItemIndex >= 0) {
+                    e.preventDefault();
+                    this.toggleCurrentItem();
+                }
+                break;
+            case 'enter':
+            case 'i':
+                if (this.currentItemIndex >= 0) {
+                    e.preventDefault();
+                    this.openCurrentItemDetails();
+                }
+                break;
+            case 't':
+                e.preventDefault();
+                this.toggleCurrentSection();
+                break;
+            case 'e':
+                if (this.currentItemIndex >= 0) {
+                    e.preventDefault();
+                    this.editCurrentNotes();
+                }
+                break;
+            case 's':
+                e.preventDefault();
+                this.progressManager.saveProgress();
+                this.showNotification('Progress saved manually', 'success');
+                break;
+            case 'r':
+                e.preventDefault();
+                this.filterManager.clearFilters();
+                break;
+            case 'x':
+                e.preventDefault();
+                document.getElementById('export-btn').click();
+                break;
+            case 'm':
+                e.preventDefault();
+                document.getElementById('theme-toggle').click();
+                break;
+            case 'g':
+                e.preventDefault();
+                this.scrollToTop();
+                break;
+            case 'home':
+                e.preventDefault();
+                this.scrollToTop();
+                break;
+            case '1': case '2': case '3': case '4': case '5':
+            case '6': case '7': case '8': case '9':
+                e.preventDefault();
+                this.jumpToSection(parseInt(key) - 1);
+                break;
+        }
+    }
+
+    toggleShortcuts() {
+        this.shortcutsEnabled = !this.shortcutsEnabled;
+        localStorage.setItem('keyboardShortcuts', this.shortcutsEnabled);
+        this.updateShortcutsButton();
+        
+        if (!this.shortcutsEnabled) {
+            this.clearCurrentHighlight();
+        }
+        
+        this.showNotification(
+            `Keyboard shortcuts ${this.shortcutsEnabled ? 'enabled' : 'disabled'}`, 
+            'info'
+        );
+    }
+
+    updateShortcutsButton() {
+        const button = document.getElementById('shortcuts-toggle');
+        if (!button) {
+            console.warn('Shortcuts toggle button not found - skipping update');
+            return;
+        }
+        
+        const icon = button.querySelector('i');
+        if (!icon) {
+            console.warn('Shortcuts toggle icon not found - skipping update');
+            return;
+        }
+        
+        if (this.shortcutsEnabled) {
+            button.classList.add('bg-sky-100', 'dark:bg-sky-900');
+            icon.classList.add('text-sky-600', 'dark:text-sky-400');
+        } else {
+            button.classList.remove('bg-sky-100', 'dark:bg-sky-900');
+            icon.classList.remove('text-sky-600', 'dark:text-sky-400');
+        }
+    }
+
+    updateItemsList() {
+        this.items = Array.from(document.querySelectorAll('.checklist-item'));
+        this.currentItemIndex = -1;
+    }
+
+    navigateNext() {
+        if (this.items.length === 0) this.updateItemsList();
+        if (this.currentItemIndex < this.items.length - 1) {
+            this.currentItemIndex++;
+            this.highlightCurrentItem();
+        }
+    }
+
+    navigatePrevious() {
+        if (this.items.length === 0) this.updateItemsList();
+        if (this.currentItemIndex > 0) {
+            this.currentItemIndex--;
+            this.highlightCurrentItem();
+        } else if (this.currentItemIndex === -1 && this.items.length > 0) {
+            this.currentItemIndex = 0;
+            this.highlightCurrentItem();
+        }
+    }
+
+    highlightCurrentItem() {
+        this.clearCurrentHighlight();
+        
+        if (this.items[this.currentItemIndex]) {
+            this.items[this.currentItemIndex].classList.add('keyboard-active');
+            this.items[this.currentItemIndex].scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+    }
+
+    clearCurrentHighlight() {
+        document.querySelectorAll('.keyboard-active').forEach(el => {
+            el.classList.remove('keyboard-active');
+        });
+    }
+
+    focusSearch() {
+        const searchInput = document.getElementById('search-input');
+        searchInput.focus();
+        searchInput.select();
+    }
+
+    handleEscape() {
+        // Close any modal with close button (item details, keyboard help, etc.)
+        const modals = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-50');
+        if (modals.length > 0) {
+            // Remove the most recent modal
+            const latestModal = modals[modals.length - 1];
+            latestModal.remove();
+            return;
+        }
+        
+        // Close celebration modal
+        const celebration = document.getElementById('completion-celebration');
+        if (!celebration.classList.contains('hidden')) {
+            this.closeCelebration();
+            return;
+        }
+        
+        // Handle search input focus and content
+        const searchInput = document.getElementById('search-input');
+        if (document.activeElement === searchInput) {
+            // If search is focused, blur it and clear if it has content
+            if (searchInput.value) {
+                searchInput.value = '';
+                this.filterManager.clearFilters();
+            }
+            searchInput.blur();
+            return;
+        }
+        
+        // Clear search if it has content but not focused
+        if (searchInput.value) {
+            searchInput.value = '';
+            this.filterManager.clearFilters();
+            return;
+        }
+        
+        // Clear current selection
+        this.clearCurrentHighlight();
+        this.currentItemIndex = -1;
+    }
+
+    toggleCurrentItem() {
+        if (this.items[this.currentItemIndex]) {
+            const checkbox = this.items[this.currentItemIndex].querySelector('.custom-checkbox');
+            if (checkbox) {
+                checkbox.click();
             }
         }
     }
 
+    openCurrentItemDetails() {
+        if (this.items[this.currentItemIndex]) {
+            const infoBtn = this.items[this.currentItemIndex].querySelector('.info-btn');
+            if (infoBtn) {
+                infoBtn.click();
+            }
+        }
+    }
+
+    toggleCurrentSection() {
+        if (this.items[this.currentItemIndex]) {
+            const section = this.items[this.currentItemIndex].closest('[data-section-id]');
+            if (section) {
+                const toggle = section.querySelector('.section-toggle');
+                if (toggle) {
+                    toggle.click();
+                }
+            }
+        }
+    }
+
+    editCurrentNotes() {
+        if (this.items[this.currentItemIndex]) {
+            const textarea = this.items[this.currentItemIndex].querySelector('textarea');
+            if (textarea) {
+                textarea.focus();
+            }
+        }
+    }
+
+    jumpToSection(index) {
+        const sections = document.querySelectorAll('[data-section-id]');
+        if (sections[index]) {
+            sections[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Clear current selection when going to top
+        this.clearCurrentHighlight();
+        this.currentItemIndex = -1;
+    }
+
+    showKeyboardHelp() {
+        // Close existing help modal if it exists
+        const existingModal = document.querySelector('[data-modal-type="keyboard-help"]');
+        if (existingModal) {
+            existingModal.remove();
+            return;
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.setAttribute('data-modal-type', 'keyboard-help');
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Keyboard Shortcuts</h3>
+                    <button id="close-help" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div class="flex justify-between"><span><kbd>?</kbd></span><span>Show this help</span></div>
+                        <div class="flex justify-between"><span><kbd>Esc</kbd></span><span>Cancel/Close</span></div>
+                        <div class="flex justify-between"><span><kbd>/</kbd></span><span>Focus search</span></div>
+                        <div class="flex justify-between"><span><kbd>j</kbd></span><span>Next item</span></div>
+                        <div class="flex justify-between"><span><kbd>k</kbd></span><span>Previous item</span></div>
+                        <div class="flex justify-between"><span><kbd>Space</kbd></span><span>Toggle item</span></div>
+                        <div class="flex justify-between"><span><kbd>Enter</kbd> or <kbd>i</kbd></span><span>Open item details</span></div>
+                        <div class="flex justify-between"><span><kbd>t</kbd></span><span>Toggle section</span></div>
+                        <div class="flex justify-between"><span><kbd>e</kbd></span><span>Edit notes</span></div>
+                        <div class="flex justify-between"><span><kbd>s</kbd></span><span>Save progress</span></div>
+                        <div class="flex justify-between"><span><kbd>r</kbd></span><span>Reset filters</span></div>
+                        <div class="flex justify-between"><span><kbd>x</kbd></span><span>Export</span></div>
+                        <div class="flex justify-between"><span><kbd>m</kbd></span><span>Toggle theme</span></div>
+                        <div class="flex justify-between"><span><kbd>g</kbd> or <kbd>Home</kbd></span><span>Go to top</span></div>
+                        <div class="flex justify-between"><span><kbd>1-9</kbd></span><span>Jump to section</span></div>
+                        <div class="flex justify-between"><span><kbd>Ctrl+K</kbd></span><span>Toggle shortcuts</span></div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <p class="text-xs text-slate-600 dark:text-slate-400">
+                        💡 Shortcuts are disabled when typing in text fields. 
+                        Use the keyboard icon in the header or Ctrl+K to toggle shortcuts on/off.
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#close-help').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    handleKeyboard() {
+        // Legacy method - now handled by bindKeyboardEvents
+        // Kept for backward compatibility if needed
+    }
+
     showItemDetails(itemId) {
+        // Close existing item details modal if it exists
+        const existingModal = document.querySelector('[data-modal-type="item-details"]');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
         let item = null;
         for (const section of this.originalData) {
             item = section.items.find(i => i.id === itemId);
@@ -543,6 +937,7 @@ class UIManager {
 
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.setAttribute('data-modal-type', 'item-details');
         modal.innerHTML = `
             <div class="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
                 <div class="flex justify-between items-start mb-4">

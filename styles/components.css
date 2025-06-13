@@ -56,3 +56,43 @@
     visibility: visible;
     opacity: 1;
 }
+
+/* Keyboard navigation highlight */
+.keyboard-active {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px;
+    border-radius: 8px;
+    background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.dark .keyboard-active {
+    outline-color: #60a5fa !important;
+    background-color: rgba(96, 165, 250, 0.1) !important;
+}
+
+/* Keyboard shortcut keys in help modal */
+kbd {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    color: #374151;
+}
+
+.dark kbd {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+/* Shortcuts button active state */
+#shortcuts-toggle.bg-sky-100 {
+    background-color: rgb(224 242 254);
+}
+
+.dark #shortcuts-toggle.bg-sky-900 {
+    background-color: rgb(12 74 110);
+}

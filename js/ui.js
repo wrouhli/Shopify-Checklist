@@ -921,10 +921,18 @@ class UIManager {
     }
 
     showItemDetails(itemId) {
-        // Close existing item details modal if it exists
+        // Check if modal for the same item is already open (toggle behavior)
         const existingModal = document.querySelector('[data-modal-type="item-details"]');
         if (existingModal) {
-            existingModal.remove();
+            const existingItemId = existingModal.getAttribute('data-item-id');
+            if (existingItemId === itemId) {
+                // Same item - close modal (toggle off)
+                existingModal.remove();
+                return;
+            } else {
+                // Different item - replace modal
+                existingModal.remove();
+            }
         }
         
         let item = null;
@@ -938,6 +946,7 @@ class UIManager {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.setAttribute('data-modal-type', 'item-details');
+        modal.setAttribute('data-item-id', itemId);
         modal.innerHTML = `
             <div class="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
                 <div class="flex justify-between items-start mb-4">

@@ -16,8 +16,16 @@ class ExportManager {
     }
 
     showExportMenu() {
+        // Close existing export modal if it exists
+        const existingModal = document.querySelector('[data-modal-type="export-menu"]');
+        if (existingModal) {
+            existingModal.remove();
+            return;
+        }
+        
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.setAttribute('data-modal-type', 'export-menu');
         modal.innerHTML = `
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-md mx-4 transition-colors">
                 <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Export Options</h3>

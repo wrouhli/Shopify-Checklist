@@ -70,22 +70,30 @@
                 
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-2">
+                    <!-- Keyboard Shortcuts Help -->
+                    <button id="shortcuts-help-btn" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors tooltip" title="Keyboard Shortcuts">
+                        <i data-lucide="keyboard" class="w-5 h-5 text-slate-600 dark:text-slate-300"></i>
+                        <div class="tooltip-content">Keyboard Shortcuts <kbd class="ml-1 px-1 text-xs bg-slate-200 dark:bg-slate-700 rounded">?</kbd></div>
+                    </button>
+                    
                     <!-- Dark Mode Toggle -->
                     <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors tooltip">
                         <i data-lucide="moon" class="w-5 h-5 text-slate-600 dark:text-slate-300"></i>
-                        <div class="tooltip-content">Toggle Dark Mode</div>
+                        <div class="tooltip-content">Toggle Dark Mode <kbd class="ml-1 px-1 text-xs bg-slate-200 dark:bg-slate-700 rounded">⌘T</kbd></div>
                     </button>
                     
                     <!-- Export Button -->
-                    <button id="export-btn" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors flex items-center space-x-2">
+                    <button id="export-btn" class="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors flex items-center space-x-2 tooltip">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Export</span>
+                        <div class="tooltip-content">Export Report <kbd class="ml-1 px-1 text-xs bg-slate-700 rounded">⌘E</kbd></div>
                     </button>
                     
                     <!-- Reset Button -->
-                    <button id="reset-btn" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center space-x-2">
+                    <button id="reset-btn" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center space-x-2 tooltip">
                         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Reset</span>
+                        <div class="tooltip-content">Reset Progress</div>
                     </button>
                 </div>
             </div>
@@ -105,8 +113,11 @@
                             type="text" 
                             id="search-input" 
                             placeholder="Search checklist items..." 
-                            class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
+                            class="w-full pl-10 pr-16 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
                         >
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                            <kbd class="px-1 py-0.5 text-xs bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400 rounded">⌘F</kbd>
+                        </div>
                     </div>
                 </div>
                 
@@ -198,6 +209,7 @@
         }
     </script>
     <script src="js/export.js?v=1"></script>
+    <script src="js/shortcuts.js?v=1"></script>
     <script src="js/ui.js?v=1"></script>
     <script src="js/animations.js?v=1"></script>
     <script src="js/app.js?v=1"></script>

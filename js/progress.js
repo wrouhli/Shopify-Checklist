@@ -14,30 +14,41 @@ class ProgressManager {
         if (saved) {
             try {
                 const progressData = JSON.parse(saved);
+                console.log('Loading saved progress:', progressData.metadata);
                 this.restoreChecklistState(progressData.checklist);
                 this.updateLastModified(progressData.timestamp);
+                console.log('✓ Progress restored:', this.completedItems.size, 'items completed');
             } catch (error) {
                 console.error('Error loading progress:', error);
             }
+        } else {
+            console.log('No saved progress found');
         }
     }
 
     saveProgress() {
-        const progressData = {
-            checklist: this.originalData,
-            timestamp: new Date().toISOString(),
-            metadata: {
-                totalItems: this.getTotalItems(),
-                completedItems: this.getCompletedItems(),
-                completionPercentage: this.getCompletionPercentage()
-            }
-        };
-        
-        localStorage.setItem('shopify-qa-progress', JSON.stringify(progressData));
+        try {
+            const progressData = {
+                checklist: this.originalData,
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    totalItems: this.getTotalItems(),
+                    completedItems: this.getCompletedItems(),
+                    completionPercentage: this.getCompletionPercentage()
+                }
+            };
+            
+            localStorage.setItem('shopify-qa-progress', JSON.stringify(progressData));
+            console.log('✓ Progress saved:', progressData.metadata);
+        } catch (error) {
+            console.error('Error saving progress:', error);
+        }
     }
 
     restoreChecklistState(savedData) {
         this.completedItems.clear();
+        let restoredItems = 0;
+        
         savedData.forEach(savedSection => {
             const section = this.originalData.find(s => s.id === savedSection.id);
             if (section) {
@@ -48,11 +59,14 @@ class ProgressManager {
                         item.notes = savedItem.notes || '';
                         if (item.completed) {
                             this.completedItems.add(item.id);
+                            restoredItems++;
                         }
                     }
                 });
             }
         });
+        
+        console.log(`Restored ${restoredItems} completed items from saved progress`);
     }
 
     resetProgress() {

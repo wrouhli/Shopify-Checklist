@@ -28,6 +28,13 @@ class UIManager {
             }
         });
 
+        // Shortcuts help button
+        document.getElementById('shortcuts-help-btn').addEventListener('click', () => {
+            if (window.keyboardShortcuts) {
+                window.keyboardShortcuts.toggleHelp();
+            }
+        });
+
         // FAB buttons
         document.getElementById('fab-main').addEventListener('click', () => {
             this.toggleFABMenu();
@@ -50,9 +57,10 @@ class UIManager {
             this.exportFinalReport();
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            this.handleKeyboard(e);
+        // Listen for shortcut save events
+        document.addEventListener('shortcut:save', () => {
+            this.progressManager.saveProgress();
+            this.showNotification('Progress saved via shortcut', 'success');
         });
 
         // Auto-save on changes
@@ -187,13 +195,22 @@ class UIManager {
         }[item.priority];
 
         return `
-            <div class="checklist-item group p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-sm transition-all ${isCompleted ? 'opacity-75' : ''}" data-item-id="${item.id}">
+            <div class="checklist-item group relative p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-sm transition-all ${isCompleted ? 'opacity-75' : ''}" 
+                 data-item-id="${item.id}" 
+                 tabindex="0">
+                
+                <!-- Keyboard hint -->
+                <div class="keyboard-hint">
+                    <kbd>⌘⏎</kbd> to toggle
+                </div>
+                
                 <div class="flex items-start space-x-3">
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" 
                                class="custom-checkbox" 
                                data-item-id="${item.id}" 
-                               ${isCompleted ? 'checked' : ''}>
+                               ${isCompleted ? 'checked' : ''}
+                               tabindex="-1">
                     </label>
                     
                     <div class="flex-1 min-w-0">
@@ -512,25 +529,6 @@ class UIManager {
         }
     }
 
-    handleKeyboard(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            this.progressManager.saveProgress();
-            this.showNotification('Progress saved', 'success');
-        }
-        
-        if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-            e.preventDefault();
-            document.getElementById('export-btn').click();
-        }
-        
-        if (e.key === 'Escape') {
-            const celebration = document.getElementById('completion-celebration');
-            if (!celebration.classList.contains('hidden')) {
-                this.closeCelebration();
-            }
-        }
-    }
 
     showItemDetails(itemId) {
         let item = null;

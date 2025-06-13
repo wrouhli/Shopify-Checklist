@@ -38,6 +38,15 @@ class ShopifyQAApp {
         this.exportManager.init();
         this.uiManager.init();
         
+        // Show welcome message if no progress exists
+        if (this.progressManager.getCompletedItems() === 0 && !localStorage.getItem('shopify-qa-progress')) {
+            setTimeout(() => {
+                if (this.uiManager) {
+                    this.uiManager.showNotification('Welcome! Your progress will be automatically saved as you work.', 'info');
+                }
+            }, 1000);
+        }
+        
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();

@@ -3,3 +3,6 @@ node_modules/
 .DS_Store
 build/
 dist/
+
+# Keep CLAUDE.md local - contains personal developer context
+CLAUDE.md
